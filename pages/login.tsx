@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import { useAuth } from '../contexts/authContext'; // Импортируем useAuth
 
 const Login = () => {
   const router = useRouter();
+  const { login } = useAuth(); // Извлекаем метод login из контекста
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,17 +25,13 @@ const Login = () => {
       // Отправляем запрос на сервер для получения токена
       const response = await axios.post('http://localhost:8000/login', {
         email,
-        password: password,
+        password,
       });
 
       console.log('Login successful, token received:', response.data.token); // Логируем успешный ответ
 
-      // Сохраняем токен в localStorage (или sessionStorage)
-      localStorage.setItem('token', response.data.token);
-
-      // Напрямую "авторизуем" пользователя
-      // Сохраняем токен и предполагаем, что он будет использоваться на всех страницах
-      axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+      // Сохраняем токен и обновляем состояние аутентификации
+      login(response.data.token); // Вызываем метод login из контекста
 
       // Перенаправляем пользователя на главную страницу
       router.push('/');

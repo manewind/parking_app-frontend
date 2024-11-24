@@ -21,24 +21,25 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [profilePicture, setProfilePicture] = useState<string | null>("/prfilePicture.png");
+  const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
 
+  // Проверка токена и установка состояния при монтировании компонента
   useEffect(() => {
     const token = localStorage.getItem('token');
-    console.log('Токен из localStorage при монтировании:', token);  // Логирование токена при монтировании
     if (token) {
-      // Просто обновляем состояние, если токен найден
-      setIsLoggedIn(true);
+      // Проверка токена на сервере
+      validateToken(token);
     } else {
-      setIsLoggedIn(false); // если токена нет, то явно указываем isLoggedIn как false
+      // Если токена нет, то явно сбрасываем состояние
+      setIsLoggedIn(false);
+      setUsername(null);
+      setProfilePicture(null);
     }
-  }, []);  // useEffect сработает при монтировании компонента
+  }, []);
 
-  const login = (token: string) => {
-    localStorage.setItem('token', token);
-    setIsLoggedIn(true); // обновляем состояние, что пользователь залогинен
-
+  // Функция проверки токена
+  const validateToken = (token: string) => {
     axios
       .get('http://localhost:8000/me', {
         headers: {
@@ -46,20 +47,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       })
       .then((response) => {
+        setIsLoggedIn(true);
         setUsername(response.data.username);
         setProfilePicture('/prfilePicture.png');
       })
       .catch((error) => {
-        console.error('Ошибка при получении данных пользователя:', error);
-        logout(); // если ошибка - вызываем logout
+        console.error('Ошибка при проверке токена на сервере:', error);
+        // Если ошибка - удаляем токен и сбрасываем состояние
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        setUsername(null);
+        setProfilePicture(null);
       });
   };
 
+  const login = (token: string) => {
+    localStorage.setItem('token', token);
+    validateToken(token); // вызываем ту же функцию для проверки токена и установки состояния
+  };
+
   const logout = () => {
+    localStorage.removeItem('token');
     setIsLoggedIn(false);
     setProfilePicture(null);
     setUsername(null);
-    localStorage.removeItem('token');
   };
 
   return (

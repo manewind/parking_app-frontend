@@ -6,7 +6,7 @@ const Header = () => {
   const { isLoggedIn, logout } = useAuth();
 
   useEffect(() => {
-    console.log('Auth state changed:', isLoggedIn); // Логирование для отладки
+    console.log('Auth state changed:', isLoggedIn); 
   }, [isLoggedIn]);
 
   return (
