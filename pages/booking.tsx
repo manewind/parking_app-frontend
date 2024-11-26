@@ -52,7 +52,8 @@ const parkingSpots: ISpot[] = [
 const Bookings: React.FC = () => {
   const [selectedSpot, setSelectedSpot] = useState<number | null>(null); // state to track selected spot
   const [pageLoaded, setPageLoaded] = useState(false);
-  const [floor, setFloor] = useState(1)
+  const [floor, setFloor] = useState(1);
+  const [loading, setLoading] = useState(false);;
 
   useEffect(() => {
     // Set pageLoaded to true after the component mounts to trigger the page load animation
