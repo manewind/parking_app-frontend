@@ -1,16 +1,24 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../contexts/authContext';
 
 const Header = () => {
   const { isLoggedIn, logout } = useAuth();
+  const [showHeader, setShowHeader] = useState(false);
 
   useEffect(() => {
-    console.log('Auth state changed:', isLoggedIn); 
-  }, [isLoggedIn]);
+    // Плавное появление хедера через время
+    setTimeout(() => {
+      setShowHeader(true);
+    }, 200); // Делаем задержку, чтобы хедер постепенно появлялся
+  }, []);
 
   return (
-    <header className="bg-blue-800 text-white p-4">
+    <header
+      className={`bg-blue-800 text-white p-4 transition-opacity duration-1000 ${
+        showHeader ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
           MyPark
@@ -23,6 +31,10 @@ const Header = () => {
             Booking
           </Link>
 
+          <Link href="/review" className="hover:text-blue-400">
+            Reviews
+          </Link>
+
           {isLoggedIn ? (
             <>
               <button
@@ -32,15 +44,12 @@ const Header = () => {
                 Logout
               </button>
 
-              {/* Статическая картинка профиля, заменяем на "profilePicture.png" */}
               <Link href="/profile">
-                
-                  <img
-                    src="/prfilePicture.png" // Указание статического пути к картинке
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-               
+                <img
+                  src="/prfilePicture.png"
+                  alt="Profile"
+                  className="w-10 h-10 rounded-full object-cover"
+                />
               </Link>
             </>
           ) : (
@@ -51,11 +60,8 @@ const Header = () => {
               <Link href="/register" className="hover:text-blue-400">
                 Sign Up
               </Link>
-              
             </>
           )}
-
-          
         </nav>
       </div>
     </header>

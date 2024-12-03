@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { FaCamera, FaStar } from "react-icons/fa";
 import { HiPhone } from "react-icons/hi";
-import { useAuth } from "../contexts/authContext"; // Импортируем useAuth
+import { useAuth } from "../contexts/authContext";
 
 interface ParkingHistoryItem {
   id: number;
@@ -10,19 +11,45 @@ interface ParkingHistoryItem {
   isVIP: boolean;
 }
 
-// Пример данных для истории парковок
-const parkingHistory: ParkingHistoryItem[] = [
-  { id: 1, spot: 12, date: "2024-10-15", isVIP: true },
-  { id: 2, spot: 8, date: "2024-10-14", isVIP: false },
-  { id: 3, spot: 21, date: "2024-10-13", isVIP: true },
-  { id: 4, spot: 3, date: "2024-10-10", isVIP: false },
-];
-
 const ProfilePage: React.FC = () => {
-  const { isLoggedIn, profilePicture, username } = useAuth(); // Достаём данные из контекста
+  const { isLoggedIn, profilePicture, username, userId } = useAuth(); // Добавьте userId в контекст
+  const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchParkingHistory = async () => {
+      try {
+        const response = await axios.get(`/user-bookings/${userId}`);
+        const bookings = response.data.bookings.map((booking: any) => ({
+          id: booking.id,
+          spot: booking.parking_slot_id,
+          date: new Date(booking.start_time).toLocaleDateString(),
+          isVIP: booking.status === "VIP",
+        }));
+        setParkingHistory(bookings);
+      } catch (err) {
+        setError("Ошибка при загрузке данных о бронированиях.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchParkingHistory();
+  }, [userId]);
 
   if (!isLoggedIn) {
     return <p>Пожалуйста, войдите в систему, чтобы просмотреть свой профиль.</p>;
+  }
+
+  if (loading) {
+    return <p>Загрузка данных...</p>;
+  }
+
+  if (error) {
+    return <p>{error}</p>;
   }
 
   return (
@@ -30,7 +57,7 @@ const ProfilePage: React.FC = () => {
       <div className="flex justify-center mb-8">
         <div className="relative">
           <img
-            src={profilePicture || "https://via.placeholder.com/150"} // Используем изображение из контекста
+            src={profilePicture || "https://via.placeholder.com/150"}
             alt="Profile"
             className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover"
           />
@@ -40,12 +67,11 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* User Info */}
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">{username || "Guest"}</h1> {/* Используем имя из контекста */}
+        <h1 className="text-3xl font-bold">{username || "Guest"}</h1>
         <div className="flex justify-center items-center space-x-2 mt-4">
           <HiPhone size={20} />
-          <h2 className=" text-xl font-semibold">+375296473620</h2>
+          <h2 className="text-xl font-semibold">+375296473620</h2>
         </div>
       </div>
 
@@ -55,7 +81,9 @@ const ProfilePage: React.FC = () => {
           {parkingHistory.map((historyItem) => (
             <div
               key={historyItem.id}
-              className={`p-4 border rounded-lg ${historyItem.isVIP ? "bg-yellow-100 border-yellow-500" : "bg-gray-100 border-gray-300"}`}
+              className={`p-4 border rounded-lg ${
+                historyItem.isVIP ? "bg-yellow-100 border-yellow-500" : "bg-gray-100 border-gray-300"
+              }`}
             >
               <div className="flex justify-between items-center">
                 <p className="text-xl text-gray-600 font-semibold">Spot {historyItem.spot}</p>

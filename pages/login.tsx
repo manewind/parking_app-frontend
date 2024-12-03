@@ -19,21 +19,18 @@ const Login = () => {
       return;
     }
 
-    console.log('Attempting login with email:', email); // Логируем email перед отправкой
+    console.log('Attempting login with email:', email); 
 
     try {
-      // Отправляем запрос на сервер для получения токена
       const response = await axios.post('http://localhost:8000/login', {
         email,
         password,
       });
 
-      console.log('Login successful, token received:', response.data.token); // Логируем успешный ответ
+      console.log('Login successful, token received:', response.data.token); 
 
-      // Сохраняем токен и обновляем состояние аутентификации
-      login(response.data.token); // Вызываем метод login из контекста
+      login(response.data.token); 
 
-      // Перенаправляем пользователя на главную страницу
       router.push('/');
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
