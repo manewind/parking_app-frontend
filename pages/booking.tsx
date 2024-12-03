@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaStar } from "react-icons/fa"; // Using icons for VIP spots
+import { FaStar } from "react-icons/fa"; 
+import axios from "axios";
+import { useAuth } from "../contexts/authContext";
 
 interface ISpot {
   id: number,
@@ -55,8 +57,9 @@ const Bookings: React.FC = () => {
   const [floor, setFloor] = useState(1);
   const [loading, setLoading] = useState(false);;
 
+  const { userId } = useAuth();
+
   useEffect(() => {
-    // Set pageLoaded to true after the component mounts to trigger the page load animation
     const timer = setTimeout(() => {
       setPageLoaded(true);
     }, 500); // Delay to let the page content load first
@@ -67,6 +70,49 @@ const Bookings: React.FC = () => {
     // Toggle the selection of the spot
     setSelectedSpot(spotId === selectedSpot ? null : spotId);
   };
+
+  const handleBooking = () => {
+    console.log("userId:", userId);
+    console.log("selectedSpot:", selectedSpot);
+  
+    if (userId && selectedSpot) {
+      setLoading(true);
+
+      const startTime = new Date().toISOString();  // Текущее время в формате ISO
+
+      // Вычисляем endTime, добавив 5 часов к текущему времени
+      const endTime = new Date();
+      endTime.setHours(endTime.getHours() + 5);  // Добавляем 5 часов
+      const endTimeISO = endTime.toISOString(); 
+
+      axios
+        .post("http://localhost:8000/booking", {
+          user_id: userId, // ID пользователя
+          parking_slot_id: selectedSpot, 
+          start_time: startTime, // Текущее время
+          end_time: endTimeISO // Выбранное место
+        })
+        .then((response) => {
+          console.log("Бронирование успешно:", response.data);
+          alert("Бронирование успешно!");
+        })
+        .catch((error) => {
+          console.error("Ошибка при бронировании:", error.response?.data || error.message);
+          if (error.response) {
+            console.error("Ответ сервера:", error.response.data);
+          }
+          alert("Не удалось выполнить бронирование.");
+        })
+        .finally(() => {
+          setLoading(false);
+          setSelectedSpot(null);
+        });
+    } else {
+      console.error("Пользователь не залогинен или место не выбрано.");
+      alert("Выберите место для бронирования.");
+    }
+  };
+  
 
   const filterSpots = (spot: ISpot) => {
     if(floor === 1){
@@ -106,7 +152,6 @@ const Bookings: React.FC = () => {
         ))}
       </div>
 
-      {/* Confirm button */}
       <div className="flex flex-col mt-8">
         <div className="flex justify-center gap-4 mb-3">
           <button onClick={() => setFloor(1)} className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition">First floor</button>
@@ -114,6 +159,7 @@ const Bookings: React.FC = () => {
         </div>
         <button
           className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
+          onClick={handleBooking}
           disabled={selectedSpot === null} // Disable button if no spot is selected
         >
           Confirm selection

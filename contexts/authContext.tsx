@@ -5,6 +5,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   profilePicture: string | null;
   username: string | null;
+  userId: number | null;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -23,15 +24,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
   const [username, setUsername] = useState<string | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
 
   // Проверка токена и установка состояния при монтировании компонента
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // Проверка токена на сервере
       validateToken(token);
     } else {
-      // Если токена нет, то явно сбрасываем состояние
       setIsLoggedIn(false);
       setUsername(null);
       setProfilePicture(null);
@@ -50,11 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setIsLoggedIn(true);
         setUsername(response.data.username);
         setProfilePicture('/prfilePicture.png');
+        setUserId(response.data.user_id);
       })
       .catch((error) => {
         console.error('Ошибка при проверке токена на сервере:', error);
-        // Если ошибка - удаляем токен и сбрасываем состояние
         localStorage.removeItem('token');
+        setUserId(null);
         setIsLoggedIn(false);
         setUsername(null);
         setProfilePicture(null);
@@ -74,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, profilePicture, username, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn,  userId, profilePicture, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
