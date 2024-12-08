@@ -9,10 +9,11 @@ const ReviewForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
   const [reviews, setReviews] = useState<any[]>([]);
-  const [loaded, setLoaded] = useState(false); // Для анимации формы
+  const [loaded, setLoaded] = useState(false);
+  const [selectedRating, setSelectedRating] = useState<number | null>(null); // Для фильтрации
 
   useEffect(() => {
-    setTimeout(() => setLoaded(true), 200); // Плавное появление формы
+    setTimeout(() => setLoaded(true), 200);
 
     const fetchReviews = async () => {
       try {
@@ -40,20 +41,30 @@ const ReviewForm = () => {
     }
 
     try {
+      const newReview = { rating, comment, username: "Вы" };
+      setReviews((prevReviews) => [newReview, ...prevReviews]); // Оптимистическое обновление
+
       const response = await axios.post("http://localhost:8000/review", {
         user_id: userId,
         rating,
         comment,
       });
+
+      setReviews((prevReviews) =>
+        [response.data, ...prevReviews.filter((r) => r.comment !== comment)]
+      );
       setSuccess(true);
       setError(null);
       setRating(0);
       setComment("");
-      setReviews([response.data, ...reviews]);
     } catch (err) {
       setError("Ошибка при отправке отзыва");
     }
   };
+
+  const filteredReviews = selectedRating
+    ? reviews.filter((review) => review.rating === selectedRating)
+    : reviews;
 
   return (
     <div
@@ -99,9 +110,28 @@ const ReviewForm = () => {
 
       <div className="mt-6">
         <h3 className="text-xl font-semibold text-blue-600 mb-4">Отзывы пользователей:</h3>
+
+        <div className="mb-4">
+          <label className="block text-gray-700">Фильтровать по рейтингу:</label>
+          <select
+            value={selectedRating || ""}
+            onChange={(e) =>
+              setSelectedRating(e.target.value ? Number(e.target.value) : null)
+            }
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+          >
+            <option value="">Все отзывы</option>
+            {[1, 2, 3, 4, 5].map((r) => (
+              <option key={r} value={r}>
+                {r}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="space-y-4">
-          {reviews.length > 0 ? (
-            reviews.map((review, index) => (
+          {filteredReviews.length > 0 ? (
+            filteredReviews.map((review, index) => (
               <div
                 key={index}
                 className="mb-4 p-4 border border-gray-300 rounded-lg shadow-sm text-black transition-all duration-700 opacity-0 transform translate-y-4"
@@ -115,7 +145,7 @@ const ReviewForm = () => {
               </div>
             ))
           ) : (
-            <p className="text-gray-500">Отзывов пока нет.</p>
+            <p className="text-gray-500">Отзывов с таким рейтингом пока нет.</p>
           )}
         </div>
       </div>

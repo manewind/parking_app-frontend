@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 
 const Register = () => {
@@ -9,6 +9,13 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPage, setShowPage] = useState(false); 
+
+  // Запускаем анимацию при загрузке компонента
+  useEffect(() => {
+    const timeout = setTimeout(() => setShowPage(true), 100);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +44,11 @@ const Register = () => {
   };
 
   return (
-    <div className="container max-w-md mx-auto p-6">
+    <div
+      className={`container max-w-md mx-auto p-6 transform transition-all duration-500 ${
+        showPage ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+      }`}
+    >
       <h2 className="text-2xl mb-4 text-center">Registration</h2>
       <form onSubmit={handleRegister} className="space-y-4">
         <div>

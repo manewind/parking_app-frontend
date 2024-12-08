@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/authContext';
 
 const Header = () => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isLoggedIn, logout, isAdmin } = useAuth();  // Используем isAdmin
   const [showHeader, setShowHeader] = useState(false);
 
   useEffect(() => {
@@ -37,6 +37,11 @@ const Header = () => {
 
           {isLoggedIn ? (
             <>
+              {isAdmin && (  
+                <Link href="/admin/" className="hover:text-blue-400">
+                  Admin Panel
+                </Link>
+              )}
               <button
                 onClick={logout}
                 className="hover:text-blue-400 text-l font-medium"

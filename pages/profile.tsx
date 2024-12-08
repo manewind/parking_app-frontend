@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { FaCamera, FaStar } from "react-icons/fa";
 import { HiPhone } from "react-icons/hi";
 import { useAuth } from "../contexts/authContext";
@@ -12,46 +11,39 @@ interface ParkingHistoryItem {
 }
 
 const ProfilePage: React.FC = () => {
-  const { isLoggedIn, profilePicture, username, userId } = useAuth(); // Добавьте userId в контекст
-  const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { isLoggedIn, profilePicture, username, isAdmin } = useAuth(); // Добавлено isAdmin
+  const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([
+    {
+      id: 1,
+      spot: 42,
+      date: "2024-12-01",
+      isVIP: true,
+    },
+    {
+      id: 2,
+      spot: 15,
+      date: "2024-12-02",
+      isVIP: false,
+    },
+  ]); // Примеры бронирований
 
-  useEffect(() => {
-    if (!userId) return;
-
-    const fetchParkingHistory = async () => {
-      try {
-        const response = await axios.get(`/user-bookings/${userId}`);
-        const bookings = response.data.bookings.map((booking: any) => ({
-          id: booking.id,
-          spot: booking.parking_slot_id,
-          date: new Date(booking.start_time).toLocaleDateString(),
-          isVIP: booking.status === "VIP",
-        }));
-        setParkingHistory(bookings);
-      } catch (err) {
-        setError("Ошибка при загрузке данных о бронированиях.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchParkingHistory();
-  }, [userId]);
-
-  if (!isLoggedIn) {
-    return <p>Пожалуйста, войдите в систему, чтобы просмотреть свой профиль.</p>;
+  if (isAdmin) {
+    // Если пользователь — администратор
+    return (
+      <div className="container mx-auto px-6 py-8 flex flex-col items-center">
+        <div className="relative">
+          <img
+            src={profilePicture || "https://via.placeholder.com/150"}
+            alt="Profile"
+            className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover"
+          />
+        </div>
+        <h1 className="text-xl font-bold mt-4">Admin</h1>
+      </div>
+    );
   }
 
-  if (loading) {
-    return <p>Загрузка данных...</p>;
-  }
-
-  if (error) {
-    return <p>{error}</p>;
-  }
-
+  // Если пользователь — обычный
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="flex justify-center mb-8">

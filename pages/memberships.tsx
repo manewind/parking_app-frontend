@@ -41,7 +41,7 @@ const memberships: Membership[] = [
   {
     title: 'VIP',
     description: 'Full access to all privileges',
-    price: '$180 BYN/month',
+    price: '180 BYN/month',
     bookingHours: 'Unlimited booking hours',
     privileges: [
       { name: 'Access to standard parking spots', allowed: true },
