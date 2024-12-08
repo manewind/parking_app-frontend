@@ -3,14 +3,13 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/authContext';
 
 const Header = () => {
-  const { isLoggedIn, logout, isAdmin } = useAuth();  // Используем isAdmin
+  const { isLoggedIn, logout, isAdmin, userId} = useAuth();  
   const [showHeader, setShowHeader] = useState(false);
 
   useEffect(() => {
-    // Плавное появление хедера через время
     setTimeout(() => {
       setShowHeader(true);
-    }, 200); // Делаем задержку, чтобы хедер постепенно появлялся
+    }, 200); 
   }, []);
 
   return (
@@ -49,7 +48,7 @@ const Header = () => {
                 Logout
               </button>
 
-              <Link href="/profile">
+              <Link href={`/profile/${userId}`}>
                 <img
                   src="/prfilePicture.png"
                   alt="Profile"

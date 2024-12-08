@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaCamera, FaStar } from "react-icons/fa";
 import { HiPhone } from "react-icons/hi";
-import { useAuth } from "../contexts/authContext";
+import { useAuth } from "../../contexts/authContext";
 
 interface ParkingHistoryItem {
   id: number;
@@ -11,7 +11,7 @@ interface ParkingHistoryItem {
 }
 
 const ProfilePage: React.FC = () => {
-  const { isLoggedIn, profilePicture, username, isAdmin } = useAuth(); // Добавлено isAdmin
+  const { isLoggedIn, profilePicture, username, isAdmin } = useAuth(); 
   const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([
     {
       id: 1,
