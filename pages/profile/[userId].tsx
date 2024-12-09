@@ -1,18 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaCamera, FaStar } from "react-icons/fa";
 import { HiPhone } from "react-icons/hi";
+import { useParams } from "next/navigation";
 import { useAuth } from "../../contexts/authContext";
 
-interface ParkingHistoryItem {
+interface User {
   id: number;
-  spot: number;
-  date: string;
-  isVIP: boolean;
+  username: string;
+  phone: string;
 }
 
-const ProfilePage: React.FC = () => {
-  const { isLoggedIn, profilePicture, username, isAdmin } = useAuth(); 
-  const [parkingHistory, setParkingHistory] = useState<ParkingHistoryItem[]>([
+const ProfilePage = () => {
+  const { userId } = useParams();
+  const { isAdmin } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+  const [parkingHistory, setParkingHistory] = useState([
     {
       id: 1,
       spot: 42,
@@ -25,15 +27,29 @@ const ProfilePage: React.FC = () => {
       date: "2024-12-02",
       isVIP: false,
     },
-  ]); // Примеры бронирований
+  ]);
 
-  if (isAdmin) {
-    // Если пользователь — администратор
+  useEffect(() => {
+    (async () => {
+      try {
+        const response = await fetch(`http://localhost:8000/user/${userId}`);
+        if (!response.ok) {
+          throw new Error(`Ошибка: ${response.status}`);
+        }
+        const userData = await response.json();
+        setUser(userData);
+      } catch (error) {
+        console.error("Ошибка при получении данных пользователя:", error);
+      }
+    })();
+  }, [userId]);
+
+  if (isAdmin && Number(userId) === 6) {
     return (
       <div className="container mx-auto px-6 py-8 flex flex-col items-center">
         <div className="relative">
           <img
-            src={profilePicture || "https://via.placeholder.com/150"}
+            src="/prfilePicture.png"
             alt="Profile"
             className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover"
           />
@@ -43,13 +59,12 @@ const ProfilePage: React.FC = () => {
     );
   }
 
-  // Если пользователь — обычный
   return (
     <div className="container mx-auto px-6 py-8">
       <div className="flex justify-center mb-8">
         <div className="relative">
           <img
-            src={profilePicture || "https://via.placeholder.com/150"}
+            src="/prfilePicture.png"
             alt="Profile"
             className="w-32 h-32 rounded-full border-4 border-blue-500 object-cover"
           />
@@ -60,10 +75,10 @@ const ProfilePage: React.FC = () => {
       </div>
 
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">{username || "Guest"}</h1>
+        <h1 className="text-3xl font-bold">{user?.username || "Guest"}</h1>
         <div className="flex justify-center items-center space-x-2 mt-4">
           <HiPhone size={20} />
-          <h2 className="text-xl font-semibold">+375296473620</h2>
+          <h2 className="text-xl font-semibold">{user?.phone || "+375296473620"}</h2>
         </div>
       </div>
 

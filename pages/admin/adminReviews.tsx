@@ -71,12 +71,7 @@ const ReviewsAdmin: React.FC = () => {
                     >
                       Delete
                     </button>
-                    <Link
-                      href={`/profile/${review.userId}`}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
-                    >
-                      Profile
-                    </Link>
+                    
                   </td>
                 </tr>
               ))}

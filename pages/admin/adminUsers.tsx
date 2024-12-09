@@ -33,8 +33,8 @@ const UsersAdmin: React.FC = () => {
 
   const handleDelete = async (userId: number) => {
     try {
-      await axios.delete(`/api/admin/users/${userId}`); // Replace with your actual API endpoint
-      setUsers(users.filter((user) => user.id !== userId)); // Remove the deleted user from the list
+      await axios.delete(`http://localhost:8000/user/${userId}`); 
+      setUsers(users.filter((user) => user.id !== userId)); 
     } catch (err) {
       setError("Failed to delete user");
     }
@@ -78,7 +78,7 @@ const UsersAdmin: React.FC = () => {
                   Delete
                 </button>
                 <Link
-                  href={`/profile/${user.id}`}
+                  href={` /profile/${user.id}`}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                 >
                   Profile
