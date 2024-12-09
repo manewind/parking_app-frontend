@@ -7,7 +7,7 @@ import { useAuth } from "../../contexts/authContext";
 interface User {
   id: number;
   username: string;
-  phone: string;
+  email: string;
 }
 
 const ProfilePage = () => {
@@ -75,10 +75,9 @@ const ProfilePage = () => {
       </div>
 
       <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">{user?.username || "Guest"}</h1>
+        <h1 className="text-3xl font-bold">{user?.username}</h1>
         <div className="flex justify-center items-center space-x-2 mt-4">
-          <HiPhone size={20} />
-          <h2 className="text-xl font-semibold">{user?.phone || "+375296473620"}</h2>
+          <h2 className="text-xl font-semibold">{user?.email}</h2>
         </div>
       </div>
 
