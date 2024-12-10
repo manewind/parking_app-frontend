@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useAuth } from '../contexts/authContext';
 
 const Header = () => {
-  const { isLoggedIn, logout, isAdmin, userId} = useAuth();  
+  const { isLoggedIn, logout, isAdmin, userId } = useAuth();  
   const [showHeader, setShowHeader] = useState(false);
 
   useEffect(() => {
@@ -24,34 +24,34 @@ const Header = () => {
         </Link>
         <nav className="flex items-center text-lg font-semibold space-x-4">
           <Link href="/memberships" className="hover:text-blue-400">
-            Memberships
+            Абонементы
           </Link>
           <Link href="/booking" className="hover:text-blue-400">
-            Booking
+            Бронирование
           </Link>
 
           <Link href="/review" className="hover:text-blue-400">
-            Reviews
+            Отзывы
           </Link>
 
           {isLoggedIn ? (
             <>
               {isAdmin && (  
                 <Link href="/admin/" className="hover:text-blue-400">
-                  Admin Panel
+                  Панель администратора
                 </Link>
               )}
               <button
                 onClick={logout}
                 className="hover:text-blue-400 text-l font-medium"
               >
-                Logout
+                Выйти
               </button>
 
               <Link href={`/profile/${userId}`}>
                 <img
                   src="/prfilePicture.png"
-                  alt="Profile"
+                  alt="Профиль"
                   className="w-10 h-10 rounded-full object-cover"
                 />
               </Link>
@@ -59,10 +59,10 @@ const Header = () => {
           ) : (
             <>
               <Link href="/login" className="hover:text-blue-400">
-                Login
+                Войти
               </Link>
               <Link href="/register" className="hover:text-blue-400">
-                Sign Up
+                Зарегистрироваться
               </Link>
             </>
           )}

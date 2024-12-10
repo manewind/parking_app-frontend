@@ -3,12 +3,17 @@ import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import Link from "next/link";
 
+interface Vehicle {
+  id: number;
+  license_plate: string;
+  model: string;
+}
+
 interface User {
   id: number;
   username: string;
   email: string;
-  profilePicture: string;
-  balance: number;
+  vehicles: Vehicle[];
 }
 
 const UsersAdmin: React.FC = () => {
@@ -23,6 +28,7 @@ const UsersAdmin: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/getAllUsers");
+        console.log(response.data)
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (err) {
@@ -53,22 +59,6 @@ const UsersAdmin: React.FC = () => {
     }
   };
 
-
-  const handleAddBalance = async (userId: number, amount: number) => {
-    try {
-      const response = await axios.put(`http://localhost:8000/user/${userId}/add-balance`, { amount });
-      const updatedUser = response.data;
-      setUsers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, balance: updatedUser.balance } : user))
-      );
-      setFilteredUsers((prev) =>
-        prev.map((user) => (user.id === userId ? { ...user, balance: updatedUser.balance } : user))
-      );
-    } catch (err) {
-      setError("Failed to add balance");
-    }
-  };
-
   return (
     <AdminLayout>
       <h1 className="text-3xl font-bold text-center mb-6">Users Management</h1>
@@ -90,7 +80,7 @@ const UsersAdmin: React.FC = () => {
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Username</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Email</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Balance</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Vehicles</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Actions</th>
                 </tr>
               </thead>
@@ -99,18 +89,18 @@ const UsersAdmin: React.FC = () => {
                   <tr key={user.id} className="border-b border-gray-700">
                     <td className="px-4 py-2">{user.username}</td>
                     <td className="px-4 py-2">{user.email}</td>
-                    <td className="px-4 py-2">  
-                      {user.balance} BYN
+                    <td className="px-4 py-2">
+                      {user.vehicles.length > 0 ? (
+                        user.vehicles.map((vehicle) => (
+                          <div key={vehicle.id} className="mb-2">
+                            <p>Model: {vehicle.model}</p>
+                            <p>Plate: {vehicle.license_plate}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <p>No vehicles</p>
+                      )}
                     </td>
-                    <button
-                      onClick={() => {
-                        const amount = parseFloat(prompt("Enter amount to add") || "0");
-                        if (amount > 0) handleAddBalance(user.id, amount);
-                      }}
-                      className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
-                    >
-                      Add Balance
-                    </button>
                     <td className="px-4 py-2 space-x-2">
                       <button
                         onClick={() => handleDelete(user.id)}

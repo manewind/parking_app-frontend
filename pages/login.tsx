@@ -22,7 +22,7 @@ const Login = () => {
     e.preventDefault();
 
     if (!email || !password) {
-      setError('Please fill in all fields');
+      setError('Пожалуйста, заполните все поля');
       return;
     }
 
@@ -36,9 +36,9 @@ const Login = () => {
       router.push('/');
     } catch (err) {
       if (axios.isAxiosError(err) && err.response) {
-        setError(err.response.data.error || 'Login failed');
+        setError(err.response.data.error || 'Не удалось войти');
       } else {
-        setError('An error occurred during login');
+        setError('Произошла ошибка при входе');
       }
     }
   };
@@ -49,14 +49,14 @@ const Login = () => {
         showPage ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
       }`}
     >
-      <h2 className="text-2xl mb-4 text-center">Login</h2>
+      <h2 className="text-2xl mb-4 text-center">Вход</h2>
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold">Email</label>
+          <label htmlFor="email" className="block text-sm font-semibold">Электронная почта</label>
           <input
             id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Введите вашу электронную почту"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -64,11 +64,11 @@ const Login = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold">Password</label>
+          <label htmlFor="password" className="block text-sm font-semibold">Пароль</label>
           <input
             id="password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Введите ваш пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -81,20 +81,20 @@ const Login = () => {
           type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded mt-4"
         >
-          Log in
+          Войти
         </button>
       </form>
 
       <p className="mt-4 text-center">
         <a href="/forgot-password" className="text-blue-500">
-          Forgot your password?
+          Забыли пароль?
         </a>
       </p>
 
       <p className="mt-4 text-center">
-        Don't have an account?{' '}
+        Нет аккаунта?{' '}
         <a href="/register" className="text-blue-500">
-          Register
+          Зарегистрироваться
         </a>
       </p>
     </div>
