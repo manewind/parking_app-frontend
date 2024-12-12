@@ -16,51 +16,59 @@ const AdminBookings: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  
   // Fetch bookings
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        console.log("Fetching bookings..."); // Лог перед запросом
         const response = await axios.get("http://localhost:8000/allBookings");
-        console.log("API response:", response.data); // Лог данных из API
-  
-        // Извлекаем массив бронирований из ответа
         const bookingsArray = Array.isArray(response.data.bookings) ? response.data.bookings : [];
-        console.log("Parsed bookings array:", bookingsArray); // Лог массива бронирований
-  
+        
         const normalizedBookings: Booking[] = bookingsArray.map((booking: any) => ({
           id: booking.id,
           userId: booking.user_id,
-          username: booking.username || "Unknown User", // Добавляем username (если есть)
-          parkingSlot: `Slot ${booking.parking_slot_id}`, // Форматируем поле ParkingSlot
-          bookingTime: `${new Date(booking.start_time).toLocaleString()} - ${new Date(booking.end_time).toLocaleString()}`, // Объединяем время
+          username: booking.username || "Unknown User",
+          parkingSlot: `Slot ${booking.parking_slot_id}`,
+          bookingTime: `${new Date(booking.start_time).toLocaleString()} - ${new Date(booking.end_time).toLocaleString()}`,
           status: booking.status,
         }));
-  
-        console.log("Normalized bookings:", normalizedBookings); // Лог нормализованных данных
+
         setBookings(normalizedBookings);
       } catch (err) {
-        console.error("Failed to load bookings:", err); // Лог ошибки
         setError("Failed to load bookings");
       } finally {
         setLoading(false);
-        console.log("Fetching complete."); // Лог завершения процесса
       }
     };
-  
+
     fetchBookings();
   }, []);
-  
-  
 
   const handleDelete = async (bookingId: number) => {
     try {
-      await axios.delete(`http://localhost:8000/user/${bookingId}`); // Замените на ваш API endpoint
-      setBookings(bookings.filter((booking) => booking.id !== bookingId)); // Удаление бронирования из списка
+      await axios.delete(`http://localhost:8000/user/${bookingId}`);
+      setBookings(bookings.filter((booking) => booking.id !== bookingId));
     } catch (err) {
       setError("Failed to delete booking");
     }
+  };
+
+  // Convert bookings data to CSV format
+  const convertToCSV = (data: Booking[]): string => {
+    const header = "id,username,parkingSlot,bookingTime,status";
+    const rows = data.map((booking) => 
+      `${booking.id},${booking.username},${booking.parkingSlot},${booking.bookingTime},${booking.status}`
+    );
+    return [header, ...rows].join("\n");
+  };
+
+  // Download CSV
+  const downloadCSV = () => {
+    const csvData = convertToCSV(bookings);
+    const blob = new Blob([csvData], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "bookings.csv"; 
+    link.click();
   };
 
   return (
@@ -70,14 +78,20 @@ const AdminBookings: React.FC = () => {
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold">All Bookings</h2>
+        <button
+          onClick={downloadCSV}
+          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 mt-4 mb-4"
+        >
+          Скачать в CSV
+        </button>
         <div className="overflow-y-auto max-h-96 mt-4">
           <table className="min-w-full">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Username</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Parking Slot</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Booking Time</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Actions</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Пользователь</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Парковочное место</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Время брони</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Действия</th>
               </tr>
             </thead>
             <tbody>

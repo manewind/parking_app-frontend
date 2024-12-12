@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminLayout from "../../components/adminLayout";
+import AdminLayout from "../../../components/adminLayout";
 
 type Privilege = { name: string; allowed: boolean };
 type Membership = {
@@ -66,7 +66,7 @@ const AdminAddMembership = () => {
 
   return (
     <AdminLayout>
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-gray-800 rounded-lg">
         <h1 className="text-3xl font-semibold mb-8 text-center">Добавить новый абонемент</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>

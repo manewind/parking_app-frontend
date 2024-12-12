@@ -34,28 +34,51 @@ const ReviewsAdmin: React.FC = () => {
 
   const handleDelete = async (reviewId: number) => {
     try {
-      await axios.delete(`/api/admin/reviews/${reviewId}`); // Замените на ваш API endpoint
-      setReviews(reviews.filter((review) => review.id !== reviewId)); // Удаление отзыва из списка
+      await axios.delete(`/api/admin/reviews/${reviewId}`);
+      setReviews(reviews.filter((review) => review.id !== reviewId));
     } catch (err) {
       setError("Failed to delete review");
     }
   };
 
+  // Convert reviews data to CSV format
+  const convertToCSV = (data: Review[]): string => {
+    const header = "id,username,comment,rating";
+    const rows = data.map((review) => `${review.id},${review.username},${review.comment},${review.rating}`);
+    return [header, ...rows].join("\n");
+  };
+
+  // Download CSV
+  const downloadCSV = () => {
+    const csvData = convertToCSV(reviews);
+    const blob = new Blob([csvData], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "reviews.csv"; // Имя файла
+    link.click();
+  };
+
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold text-center mb-6">Reviews Management</h1>
-      {loading && <p className="text-center">Loading reviews...</p>}
+      <h1 className="text-3xl font-bold text-center mb-6">Управление отзывами</h1>
+      {loading && <p className="text-center">Загрузка отзывов...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold">All Reviews</h2>
+        <h2 className="text-xl font-semibold">Все отзывы</h2>
+        <button
+          onClick={downloadCSV}
+          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 mt-4 mb-4"
+        >
+          Скачать в CSV
+        </button>
         <div className="overflow-y-auto max-h-96 mt-4">
           <table className="min-w-full">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Username</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Comment</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Rating</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Actions</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Пользователь</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Комментарий</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Рейтинг</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Действия</th>
               </tr>
             </thead>
             <tbody>
@@ -69,9 +92,8 @@ const ReviewsAdmin: React.FC = () => {
                       onClick={() => handleDelete(review.id)}
                       className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     >
-                      Delete
+                      Удалить
                     </button>
-                    
                   </td>
                 </tr>
               ))}

@@ -9,6 +9,8 @@ interface User {
   email: string;
   vehicles: Vehicle[];
   balance: number;
+  membership: Membership | null;
+
 }
 
 interface Vehicle {
@@ -25,6 +27,15 @@ interface Booking {
   isVIP: boolean;
 }
 
+interface Membership {
+  id: number;
+  membership_name: string;
+  start_date: string;
+  end_date: string;
+  price: number;
+  status: string;
+}
+
 const ProfilePage = () => {
   const router = useRouter();
   const { userId } = router.query;
@@ -34,7 +45,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     if (!userId) return;
-
+  
     const fetchUserData = async () => {
       try {
         const response = await fetch(`http://localhost:8000/user/${userId}`);
@@ -43,7 +54,7 @@ const ProfilePage = () => {
         }
         const userData = await response.json();
         setUser(userData);
-
+  
         // Получение данных бронирований
         const bookingsResponse = await fetch(
           `http://localhost:8000/user-bookings/${userId}`
@@ -54,23 +65,23 @@ const ProfilePage = () => {
           );
         }
         const bookingsData = await bookingsResponse.json();
-
-        // Преобразуем данные в нужный формат
+  
         const formattedBookings = bookingsData.bookings.map((booking: any) => ({
           id: booking.id,
           spot: booking.parking_slot_id,
           date: new Date(booking.start_time).toLocaleString(),
           isVIP: false,
         }));
-
+  
         setBookings(formattedBookings);
       } catch (error) {
         console.error("Ошибка при получении данных пользователя:", error);
       }
     };
-
+  
     fetchUserData();
   }, [userId]);
+  
 
   const handleBalanceTopUp = () => {
     // Логика для обработки пополнения баланса
@@ -114,6 +125,25 @@ const ProfilePage = () => {
           </button>
         </div>
       </div>
+
+      {user?.membership && (
+  <div className="my-6">
+    <h2 className="text-2xl font-semibold mb-4">Информация об абонементе</h2>
+    <div className="max-w-md p-4 border rounded-lg bg-blue-100 text-black">
+      <p className="text-xl font-semibold">
+        Название: {user.membership.membership_name}
+      </p>
+      <p className="text-xl font-semibold">
+        Дата покупки: {new Date(user.membership.start_date).toLocaleDateString()}
+      </p>
+      <p className="text-xl font-semibold">
+        Дата окончания: {new Date(user.membership.end_date).toLocaleDateString()}
+      </p>
+      <p className="text-xl font-semibold">Статус: активен</p>
+    </div>
+  </div>
+)}
+
 
       {user?.vehicles && user.vehicles.length > 0 && (
         <div className="my-6">

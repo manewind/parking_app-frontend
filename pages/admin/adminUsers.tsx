@@ -28,7 +28,7 @@ const UsersAdmin: React.FC = () => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/getAllUsers");
-        console.log(response.data)
+        console.log(response.data);
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (err) {
@@ -59,16 +59,42 @@ const UsersAdmin: React.FC = () => {
     }
   };
 
+  // Function to convert users data to CSV
+  const convertToCSV = (data: User[]) => {
+    const header = ["ID", "Username", "Email", "Vehicles"];
+    const rows = data.map((user) => {
+      const vehicles = user.vehicles
+        .map((vehicle) => `${vehicle.model} (${vehicle.license_plate})`)
+        .join(", ");
+      return [user.id, user.username, user.email, vehicles].join(",");
+    });
+
+    return [header.join(","), ...rows].join("\n");
+  };
+
+  // Function to trigger CSV download
+  const downloadCSV = () => {
+    const csvData = convertToCSV(filteredUsers);
+    const blob = new Blob([csvData], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "users.csv";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold text-center mb-6">Users Management</h1>
-      {loading && <p className="text-center">Loading users...</p>}
+      <h1 className="text-3xl font-bold text-center mb-6">Управление пользователями</h1>
+      {loading && <p className="text-center">Загружаем пользователей...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold">All Users</h2>
+        <h2 className="text-xl font-semibold">Все Пользователи</h2>
         <input
           type="text"
-          placeholder="Search by username or email..."
+          placeholder="Поиск по имени пользователя..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full p-3 mt-4 mb-4 border border-gray-300 rounded-md text-black"
@@ -78,10 +104,10 @@ const UsersAdmin: React.FC = () => {
             <table className="min-w-full">
               <thead>
                 <tr>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Username</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Email</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Vehicles</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Actions</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Пользователь</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Почта</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Транспорт</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Действия</th>
                 </tr>
               </thead>
               <tbody>
@@ -106,13 +132,13 @@ const UsersAdmin: React.FC = () => {
                         onClick={() => handleDelete(user.id)}
                         className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                       >
-                        Delete
+                        Удалить
                       </button>
                       <Link
                         href={`/profile/${user.id}`}
                         className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
                       >
-                        Profile
+                        Профиль
                       </Link>
                     </td>
                   </tr>
@@ -121,6 +147,12 @@ const UsersAdmin: React.FC = () => {
             </table>
           </div>
         </div>
+        <button
+          onClick={downloadCSV}
+          className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
+        >
+          Скачать в CSV
+        </button>
       </div>
     </AdminLayout>
   );

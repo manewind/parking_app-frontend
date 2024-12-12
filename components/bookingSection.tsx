@@ -7,15 +7,15 @@ const BookingSection = () => {
       style={{ backgroundImage: "url('/parking_bg.jpeg')" }}
     >
       <div className="container mx-auto px-6 flex flex-col items-center text-center">
-        <h2 className="text-4xl font-bold mb-6">Easy Parking Booking with MyPark</h2>
+        <h2 className="text-4xl font-bold mb-6">Легкое бронирование парковки с MyPark</h2>
         <p className="text-lg max-w-2xl mb-8">
-          At MyPark, you can book parking spots quickly and conveniently. Choose from a variety of parking options, including standard, premium, and VIP spots. Our system allows you to reserve in advance, ensuring you always have a space ready when you need it. Just pick the location, time, and type of spot you want, and leave the rest to us.
+          С MyPark вы можете бронировать парковочные места быстро и удобно. Выбирайте из различных вариантов парковки, включая стандартные, премиум и VIP места. Наша система позволяет бронировать заранее, гарантируя, что у вас всегда будет свободное место, когда оно вам нужно. Просто выберите местоположение, время и тип места, а остальное мы сделаем за вас.
         </p>
         <a
           href="/booking"
           className="inline-block bg-blue-800 text-white py-3 px-8 rounded-lg text-lg font-medium hover:bg-blue-600"
         >
-          Go to Booking
+          Перейти к бронированию
         </a>
       </div>
     </section>

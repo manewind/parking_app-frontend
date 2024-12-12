@@ -9,7 +9,7 @@ const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPage, setShowPage] = useState(false); 
+  const [showPage, setShowPage] = useState(false);
 
   // Запускаем анимацию при загрузке компонента
   useEffect(() => {
@@ -21,7 +21,7 @@ const Register = () => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      alert('Пароли не совпадают');
       return;
     }
 
@@ -35,11 +35,11 @@ const Register = () => {
       if (response.status === 200) {
         router.push('/login');
       } else {
-        alert(`Registration error: ${response.data.message || 'Unknown error'}`);
+        alert(`Ошибка регистрации: ${response.data.message || 'Неизвестная ошибка'}`);
       }
     } catch (error) {
-      console.error('Request error:', error);
-      alert('Error connecting to the server');
+      console.error('Ошибка запроса:', error);
+      alert('Ошибка подключения к серверу');
     }
   };
 
@@ -49,14 +49,14 @@ const Register = () => {
         showPage ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
       }`}
     >
-      <h2 className="text-2xl mb-4 text-center">Registration</h2>
+      <h2 className="text-2xl mb-4 text-center">Регистрация</h2>
       <form onSubmit={handleRegister} className="space-y-4">
         <div>
-          <label htmlFor="name" className="block text-sm font-semibold">Name</label>
+          <label htmlFor="name" className="block text-sm font-semibold">Имя</label>
           <input
             id="name"
             type="text"
-            placeholder="Enter your name"
+            placeholder="Введите ваше имя"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -64,11 +64,11 @@ const Register = () => {
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-semibold">Email</label>
+          <label htmlFor="email" className="block text-sm font-semibold">Электронная почта</label>
           <input
             id="email"
             type="email"
-            placeholder="Enter your email"
+            placeholder="Введите вашу электронную почту"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -76,11 +76,11 @@ const Register = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-semibold">Password</label>
+          <label htmlFor="password" className="block text-sm font-semibold">Пароль</label>
           <input
             id="password"
             type="password"
-            placeholder="Enter your password"
+            placeholder="Введите ваш пароль"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -88,11 +88,11 @@ const Register = () => {
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-semibold">Confirm Password</label>
+          <label htmlFor="confirmPassword" className="block text-sm font-semibold">Подтвердите пароль</label>
           <input
             id="confirmPassword"
             type="password"
-            placeholder="Confirm your password"
+            placeholder="Подтвердите ваш пароль"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
@@ -103,17 +103,17 @@ const Register = () => {
           type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded mt-4"
         >
-          Register
+          Зарегистрироваться
         </button>
       </form>
 
       <p className="mt-4 text-center">
-        Already have an account?{' '}
+        Уже есть аккаунт?{' '}
         <a
           href="/login"
           className="text-blue-500"
         >
-          Log in
+          Войти
         </a>
       </p>
     </div>

@@ -4,24 +4,24 @@ import Link from "next/link";
 const ReviewsSection = () => {
   return (
     <div className="py-8 text-center text-white">
-      <h2 className="text-2xl font-bold mb-4">What our users say</h2>
+      <h2 className="text-2xl font-bold mb-4">Что говорят наши пользователи</h2>
       <p className="text-lg text-white mb-6">
-        Our users love the convenience and efficiency of our parking system. Here are some of their thoughts:
+        Наши пользователи ценят удобство и эффективность нашей системы парковки. Вот их отзывы:
       </p>
       <ul className="space-y-4 mb-6">
         <li className="text-white">
-          "Amazing app! Booking a parking slot has never been this easy."
+          "Потрясающее приложение! Забронировать парковочное место теперь проще простого."
         </li>
         <li className="text-white">
-          "The best parking solution I've ever used. Highly recommend it!"
+          "Лучшее решение для парковки, которое я когда-либо использовал. Рекомендую всем!"
         </li>
         <li className="text-white">
-          "Very user-friendly and reliable. A must-have for city drivers!"
+          "Очень удобное и надежное. Обязательно для городских водителей!"
         </li>
       </ul>
       <Link href="/review">
         <button className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-          Leave a Review
+          Оставить отзыв
         </button>
       </Link>
     </div>

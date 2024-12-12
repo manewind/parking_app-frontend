@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/authContext'; // Импорт вашего AuthProvider
 import axios from 'axios';
+import { useRouter } from 'next/router'; // Импортируем useNavigate для перехода
 
 const PaymentPage: React.FC = () => {
   const { userId } = useAuth(); // Достаем userId из контекста
+  const router = useRouter(); // Хук для навигации
 
   const [cardNumber, setCardNumber] = useState<string>('');
   const [cardHolder, setCardHolder] = useState<string>('');
   const [expiryDate, setExpiryDate] = useState<string>('');
   const [cvv, setCvv] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const [errors, setErrors] = useState({
     cardNumber: '',
@@ -22,7 +25,6 @@ const PaymentPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Валидация
     const newErrors = {
       cardNumber: '',
       cardHolder: '',
@@ -59,12 +61,20 @@ const PaymentPage: React.FC = () => {
 
     if (!Object.values(newErrors).some((error) => error)) {
       try {
+        const numericAmount = parseFloat(amount);
+
         const response = await axios.post('http://localhost:8000/add-balance', {
           user_id: userId,
-          amount,
+          amount: numericAmount,
         });
-        console.log('Ответ сервера:', response.data);
-        alert('Платеж успешно выполнен');
+
+        setShowModal(true);
+
+        setCardNumber('');
+        setCardHolder('');
+        setExpiryDate('');
+        setCvv('');
+        setAmount('');
       } catch (error) {
         console.error('Ошибка при выполнении платежа:', error);
         alert('Произошла ошибка при обработке платежа');
@@ -167,7 +177,29 @@ const PaymentPage: React.FC = () => {
             Оплатить
           </button>
         </form>
+
+        <button
+          onClick={() => router.push('/')} // Переход на главную страницу
+          className="w-full mt-4 bg-gray-300 text-black py-2 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+        >
+          Вернуться на главную
+        </button>
       </div>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg">
+            <h3 className="text-xl font-bold mb-4 text-black">Платеж успешно выполнен!</h3>
+            <p className="mb-4 text-black">Ваш платеж был обработан. Спасибо за использование нашего сервиса.</p>
+            <button
+              className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 "
+              onClick={() => setShowModal(false)}
+            >
+              Закрыть
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

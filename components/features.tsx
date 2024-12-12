@@ -3,29 +3,29 @@ import React from 'react';
 const Features = () => {
   const offerings = [
     {
-      title: 'Quick Parking Reservation',
-      description: 'Reserve a parking spot instantly without the need to search endlessly.',
+      title: 'Быстрое бронирование парковки',
+      description: 'Забронируйте парковочное место мгновенно, без необходимости долго искать.',
     },
     {
-      title: 'Real-Time Spot Availability',
-      description: 'Get live updates about available parking spots around you.',
+      title: 'Доступность мест в реальном времени',
+      description: 'Получайте актуальную информацию о доступных парковочных местах рядом с вами.',
     },
     {
-      title: 'Smart Parking Suggestions',
-      description: 'Our app suggests the best spots based on your location and preferences.',
+      title: 'Приобритение абонемента',
+      description: 'Наше приложение предлагает возможность для покупки абонемента.',
     },
     {
-      title: 'Easy Navigation',
-      description: 'Navigate to your parking spot effortlessly with our step-by-step guidance.',
+      title: 'Пополнение баланса',
+      description: 'Удобное пополнение баланса через приложение',
     },
   ];
 
   return (
     <section className="py-12">
-      <div className="container mx-auto text-center mb-12 ">
-        <h2 className="text-3xl font-bold text-white mb-4">What We Offer</h2>
+      <div className="container mx-auto text-center mb-12">
+        <h2 className="text-3xl font-bold text-white mb-4">Что мы предлагаем</h2>
         <p className="text-lg text-white">
-          At MyPark, we provide innovative solutions to make your parking experience quick, convenient, and stress-free. Here’s what we offer:
+          В MyPark мы предоставляем инновационные решения, чтобы сделать ваш опыт парковки быстрым, удобным и без стресса. Вот что мы предлагаем:
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pl-10 pr-10">
@@ -42,7 +42,5 @@ const Features = () => {
     </section>
   );
 };
-
-
 
 export default Features;
