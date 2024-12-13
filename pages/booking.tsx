@@ -2,11 +2,22 @@ import React, { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import axios from "axios";
 import { useAuth } from "../contexts/authContext";
+import moment from 'moment';
 
 interface ISpot {
-  id: number,
-  isVIP: boolean,
-  floor: number, // Добавим этаж для каждого места
+  id: number;
+  isVIP: boolean;
+  floor: number;
+}
+
+interface Booking {
+  id: number;
+  userId: number;
+  username: string;
+  parkingSlot: string;
+  bookingTime: string;
+  status: string;
+  startTime: string;
 }
 
 const parkingSpots: ISpot[] = [
@@ -58,13 +69,15 @@ const Bookings: React.FC = () => {
   const [floor, setFloor] = useState(1);
   const [loading, setLoading] = useState(false);
   const [userMembership, setUserMembership] = useState<string | null>(null);
+  const [bookedSpots, setBookedSpots] = useState<number[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
 
   const { userId } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setPageLoaded(true);
-    }, 500); // Задержка для загрузки контента
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -74,6 +87,7 @@ const Bookings: React.FC = () => {
         .get(`http://localhost:8000/user/${userId}`)
         .then((response) => {
           const membershipName = response.data.membership?.membership_name;
+          console.log("User data from backend:", response.data); // Логируем данные пользователя
           setUserMembership(membershipName);
         })
         .catch((error) => {
@@ -81,35 +95,85 @@ const Bookings: React.FC = () => {
           setUserMembership(null);
         });
     }
+
+    const fetchBookings = async () => {
+      try {
+        const response = await axios.get("http://localhost:8000/allBookings");
+        console.log("Bookings data from backend:", response.data); // Логируем данные о бронированиях
+
+        const bookingsArray = Array.isArray(response.data.bookings) ? response.data.bookings : [];
+
+        const normalizedBookings: Booking[] = bookingsArray
+          .filter((booking: any) => moment(booking.start_time).isAfter(moment())) // Фильтруем прошедшие бронирования
+          .map((booking: any) => ({
+            id: booking.id,
+            userId: booking.user_id,
+            username: booking.username || "Unknown User",
+            parkingSlot: `Slot ${booking.parking_slot_id}`,
+            bookingTime: `${moment(booking.start_time).format("MMMM Do YYYY, h:mm:ss a")} - ${moment(booking.end_time).format("MMMM Do YYYY, h:mm:ss a")}`,
+            status: booking.status,
+            startTime: booking.start_time,
+          }));
+
+        setBookings(normalizedBookings);
+
+        const bookedSlots = bookingsArray.map((booking: any) => booking.parking_slot_id);
+        setBookedSpots(bookedSlots);
+      } catch (err) {
+        console.error("Ошибка при получении данных о бронированиях:", err);
+      }
+    };
+
+    fetchBookings();
   }, [userId]);
 
   const handleSpotClick = (spotId: number, isVIP: boolean) => {
-    // Если пользователь VIP, позволяет выбирать все места, но при клике на VIP-место уведомляем
-    if (userMembership && userMembership.toLowerCase() === "vip" || !isVIP) {
-      setSelectedSpot(spotId === selectedSpot ? null : spotId);
-    } else {
-      // Если место VIP и пользователь не VIP, выводим сообщение
-      alert("Вы не можете забронировать это VIP-место.");
+    console.log(`Clicked spot ID: ${spotId}, isVIP: ${isVIP}, User Membership: ${userMembership}`);
+    console.log(`Selected spot: ${selectedSpot}, Booked spots: ${bookedSpots}`);
+    if (bookedSpots.includes(spotId)) {
+      alert("Это место уже забронировано.");
+      return;
     }
+  
+    if (isVIP && userMembership?.toLowerCase() !== "vip") {
+      alert("Вы не можете забронировать это VIP-место.");
+      return;
+    }
+    
+    setSelectedSpot(spotId === selectedSpot ? null : spotId);
   };
 
   const handleBooking = () => {
     if (userId && selectedSpot) {
       setLoading(true);
 
-      const startTime = new Date().toISOString();
-      const endTime = new Date();
-      endTime.setHours(endTime.getHours() + 5);
-      const endTimeISO = endTime.toISOString();
+      const startTime = moment().toISOString();
+      const endTime = moment().add(5, 'hours').toISOString();
+
+      setBookedSpots((prev) => [...prev, selectedSpot]);
 
       axios
         .post("http://localhost:8000/booking", {
           user_id: userId,
           parking_slot_id: selectedSpot,
           start_time: startTime,
-          end_time: endTimeISO
+          end_time: endTime,
+          status: "pending",
         })
         .then((response) => {
+          setBookings((prevBookings) => [
+            ...prevBookings,
+            {
+              id: response.data.id,
+              userId: response.data.user_id,
+              username: response.data.username || "Unknown User",
+              parkingSlot: `Slot ${response.data.parking_slot_id}`,
+              bookingTime: `${moment(response.data.start_time).format("MMMM Do YYYY, h:mm:ss a")} - ${moment(response.data.end_time).format("MMMM Do YYYY, h:mm:ss a")}`,
+              status: response.data.status,
+              startTime: response.data.start_time,
+            },
+          ]);
+
           console.log("Бронирование успешно:", response.data);
           alert("Бронирование успешно!");
         })
@@ -127,7 +191,7 @@ const Bookings: React.FC = () => {
     }
   };
 
-  const floorSpots = parkingSpots.filter(spot => spot.floor === floor); // Фильтруем места по этажу
+  const floorSpots = parkingSpots.filter(spot => spot.floor === floor);
 
   return (
     <div className={`container mx-auto px-4 py-8 transition-opacity duration-700 ease-in-out ${pageLoaded ? "opacity-100" : "opacity-0"}`}>
@@ -139,7 +203,8 @@ const Bookings: React.FC = () => {
             key={spot.id}
             className={`relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-500 transform ease-in-out
               ${spot.isVIP ? "bg-yellow-300 border-4 border-yellow-500" : "bg-gray-200 border-gray-400"}
-              ${selectedSpot === spot.id ? "bg-blue-400 border-blue-600 scale-105" : "opacity-90"}`}
+              ${selectedSpot === spot.id ? "bg-blue-400 border-blue-600 scale-105" : "opacity-90"}
+              ${bookedSpots.includes(spot.id) ? "bg-red-600 border-red-800" : ""}`}
             onClick={() => handleSpotClick(spot.id, spot.isVIP)}
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -149,24 +214,29 @@ const Bookings: React.FC = () => {
               </div>
             )}
             <p className={`text-center font-semibold ${selectedSpot === spot.id ? "text-white" : "text-gray-800"}`}>
-              {`Место ${index + 1}`}
+              {`Место ${spot.id}`}
             </p>
           </div>
         ))}
       </div>
-
+      {selectedSpot && (
+  <div className="text-center mt-4">
+    <button
+      onClick={handleBooking}
+      disabled={loading}
+      className={`bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition ${
+        loading ? "opacity-50 cursor-not-allowed" : ""
+      }`}
+    >
+      {loading ? "Обработка..." : "Забронировать место"}
+    </button>
+  </div>
+)}
       <div className="flex flex-col mt-8">
         <div className="flex justify-center gap-4 mb-3">
           <button onClick={() => setFloor(1)} className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition">Первый этаж</button>
           <button onClick={() => setFloor(2)} className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition">Второй этаж</button>
         </div>
-        <button
-          className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition"
-          onClick={handleBooking}
-          disabled={selectedSpot === null || !userMembership}
-        >
-          Подтвердить выбор
-        </button>
       </div>
     </div>
   );

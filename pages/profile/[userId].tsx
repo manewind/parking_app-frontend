@@ -48,39 +48,57 @@ const ProfilePage = () => {
   
     const fetchUserData = async () => {
       try {
+        // Запрос на получение информации о пользователе
         const response = await fetch(`http://localhost:8000/user/${userId}`);
         if (!response.ok) {
-          throw new Error(`Ошибка: ${response.status}`);
+          throw new Error(`Ошибка: ${response.status} ${response.statusText}`);
         }
         const userData = await response.json();
-        setUser(userData);
-  
+    
+        // Запрос на получение данных об абонементе
+        const membershipResponse = await fetch(
+          `http://localhost:8000/memberships/${userId}`
+        );
+        if (!membershipResponse.ok) {
+          throw new Error(
+            `Ошибка при получении данных об абонементе: ${membershipResponse.status} ${membershipResponse.statusText}`
+          );
+        }
+        const membershipData = await membershipResponse.json();
+    
+        // Если абонемент не найден (null или пустой объект), просто устанавливаем null
+        const updatedUserData = { ...userData, membership: membershipData || null };
+        setUser(updatedUserData);
+    
         // Получение данных бронирований
         const bookingsResponse = await fetch(
           `http://localhost:8000/user-bookings/${userId}`
         );
         if (!bookingsResponse.ok) {
           throw new Error(
-            `Ошибка при получении бронирований: ${bookingsResponse.status}`
+            `Ошибка при получении бронирований: ${bookingsResponse.status} ${bookingsResponse.statusText}`
           );
         }
         const bookingsData = await bookingsResponse.json();
-  
-        const formattedBookings = bookingsData.bookings.map((booking: any) => ({
+    
+        const formattedBookings = (bookingsData.bookings || []).map((booking: any) => ({
           id: booking.id,
           spot: booking.parking_slot_id,
           date: new Date(booking.start_time).toLocaleString(),
           isVIP: false,
         }));
-  
+    
         setBookings(formattedBookings);
       } catch (error) {
-        console.error("Ошибка при получении данных пользователя:", error);
+        console.error("Ошибка при получении данных:", error);
       }
     };
+    
+    
   
     fetchUserData();
   }, [userId]);
+  
   
 
   const handleBalanceTopUp = () => {
@@ -126,7 +144,7 @@ const ProfilePage = () => {
         </div>
       </div>
 
-      {user?.membership && (
+      {user?.membership ? (
   <div className="my-6">
     <h2 className="text-2xl font-semibold mb-4">Информация об абонементе</h2>
     <div className="max-w-md p-4 border rounded-lg bg-blue-100 text-black">
@@ -142,8 +160,12 @@ const ProfilePage = () => {
       <p className="text-xl font-semibold">Статус: активен</p>
     </div>
   </div>
+) : (
+  <div className="my-6">
+    <h2 className="text-2xl font-semibold mb-4">Информация об абонементе</h2>
+    <p className="text-xl font-semibold text-gray-500">Абонемент не найден.</p>
+  </div>
 )}
-
 
       {user?.vehicles && user.vehicles.length > 0 && (
         <div className="my-6">
@@ -171,24 +193,29 @@ const ProfilePage = () => {
         </div>
       )}
 
-      <div className="my-6">
-        <h2 className="text-2xl font-semibold mb-4">Бронирования</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {bookings.map((booking) => (
-            <div
-              key={booking.id}
-              className="p-4 border rounded-lg bg-gray-100 border-gray-300"
-            >
-              <div className="flex justify-between items-center">
-                <p className="text-xl text-gray-600 font-semibold">
-                  Место {booking.spot}
-                </p>
-              </div>
-              <p className="text-gray-600">Дата: {booking.date}</p>
-            </div>
-          ))}
+<div className="my-6">
+  <h2 className="text-2xl font-semibold mb-4">Бронирования</h2>
+  {bookings.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {bookings.map((booking) => (
+        <div
+          key={booking.id}
+          className="p-4 border rounded-lg bg-gray-100 border-gray-300"
+        >
+          <div className="flex justify-between items-center">
+            <p className="text-xl text-gray-600 font-semibold">
+              Место {booking.spot}
+            </p>
+          </div>
+          <p className="text-gray-600">Дата: {booking.date}</p>
         </div>
-      </div>
+      ))}
+    </div>
+  ) : (
+    <p className="text-xl text-center text-red-500">Нет бронирований.</p>
+  )}
+</div>
+
     </div>
   );
 };

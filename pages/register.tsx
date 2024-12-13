@@ -26,11 +26,13 @@ const Register = () => {
     }
 
     try {
+      console.log("Отправляемые данные на регистрацию:", { name, email, password });
       const response = await axios.post('http://localhost:8000/register', {
         username: name,
         email,
         password,
       });
+      console.log("Ответ после регистрации:", response.data);
 
       if (response.status === 200) {
         router.push('/login');

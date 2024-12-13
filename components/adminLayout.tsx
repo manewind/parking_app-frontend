@@ -24,12 +24,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <h2 className="text-2xl font-bold text-center">Панель Админа</h2>
         <nav className="space-y-4">
           <button
-            onClick={() => handleNavigation("/admin/adminParking")}
-            className="block w-full text-left px-4 py-2 rounded-md hover:bg-gray-700"
-          >
-            Парковочные места
-          </button>
-          <button
             onClick={() => handleNavigation("/admin/adminMemberships/adminViewMemberships")}
             className="block w-full text-left px-4 py-2 rounded-md hover:bg-gray-700"
           >

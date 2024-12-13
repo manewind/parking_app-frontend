@@ -29,30 +29,35 @@ const ReviewForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+  
     if (!isLoggedIn) {
       setError("Вы должны быть авторизованы, чтобы оставить отзыв");
       return;
     }
-
-    if (!rating || !comment) {
+  
+    // Проверка, чтобы комментарий не был пустым или состоящим только из пробелов
+    if (!rating || !comment.trim()) {
       setError("Пожалуйста, заполните все поля");
       return;
     }
-
+  
     try {
       const newReview = { rating, comment, username: "Вы" };
-      setReviews((prevReviews) => [newReview, ...prevReviews]); // Оптимистическое обновление
-
+      setReviews((prevReviews) => [newReview, ...prevReviews]);
+  
+      // Отправка данных на сервер
       const response = await axios.post("http://localhost:8000/review", {
         user_id: userId,
         rating,
         comment,
       });
-
-      setReviews((prevReviews) =>
-        [response.data, ...prevReviews.filter((r) => r.comment !== comment)]
-      );
+  
+      // Если сервер возвращает успешный ответ, обновляем отзывы
+      if (response.data) {
+        setReviews((prevReviews) => [response.data, ...prevReviews]);
+      }
+  
+      // Сброс состояния формы
       setSuccess(true);
       setError(null);
       setRating(0);
@@ -61,6 +66,11 @@ const ReviewForm = () => {
       setError("Ошибка при отправке отзыва");
     }
   };
+  
+  
+  
+  
+  
 
   const filteredReviews = selectedRating
     ? reviews.filter((review) => review.rating === selectedRating)

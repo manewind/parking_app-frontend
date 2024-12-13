@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
-import Link from "next/link";
+import * as XLSX from "xlsx"; // Импорт библиотеки для работы с Excel
 
 interface Review {
   id: number;
@@ -15,12 +15,12 @@ const ReviewsAdmin: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
 
-  // Fetch reviews
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await axios.get("http://localhost:8000/usersReviews"); // Замените на ваш API endpoint
+        const response = await axios.get("http://localhost:8000/usersReviews");
         setReviews(response.data);
       } catch (err) {
         setError("Failed to load reviews");
@@ -32,6 +32,16 @@ const ReviewsAdmin: React.FC = () => {
     fetchReviews();
   }, []);
 
+  const sortReviews = (order: 'asc' | 'desc') => {
+    const sortedReviews = [...reviews].sort((a, b) => (order === 'asc' ? a.rating - b.rating : b.rating - a.rating));
+    setReviews(sortedReviews);
+  };
+
+  const handleSortChange = (order: 'asc' | 'desc') => {
+    setSortOrder(order);
+    sortReviews(order);
+  };
+
   const handleDelete = async (reviewId: number) => {
     try {
       await axios.delete(`/api/admin/reviews/${reviewId}`);
@@ -41,14 +51,19 @@ const ReviewsAdmin: React.FC = () => {
     }
   };
 
-  // Convert reviews data to CSV format
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(reviews); // Преобразование данных в лист
+    const workbook = XLSX.utils.book_new(); // Создание новой книги
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Отзывы"); // Добавление листа
+    XLSX.writeFile(workbook, "reviews.xlsx"); // Сохранение файла
+  };
+
   const convertToCSV = (data: Review[]): string => {
     const header = "id,username,comment,rating";
     const rows = data.map((review) => `${review.id},${review.username},${review.comment},${review.rating}`);
     return [header, ...rows].join("\n");
   };
 
-  // Download CSV
   const downloadCSV = () => {
     const csvData = convertToCSV(reviews);
     const blob = new Blob([csvData], { type: "text/csv" });
@@ -65,12 +80,34 @@ const ReviewsAdmin: React.FC = () => {
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold">Все отзывы</h2>
-        <button
-          onClick={downloadCSV}
-          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 mt-4 mb-4"
-        >
-          Скачать в CSV
-        </button>
+        <div className="flex justify-between items-center">
+          <button
+            onClick={() => handleSortChange('asc')}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mt-4"
+          >
+            Сортировать по возрастанию
+          </button>
+          <button
+            onClick={() => handleSortChange('desc')}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mt-4"
+          >
+            Сортировать по убыванию
+          </button>
+          <div className="space-x-4 mt-4">
+            <button
+              onClick={downloadExcel}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+            >
+              Скачать в Excel
+            </button>
+            <button
+              onClick={downloadCSV}
+              className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+            >
+              Скачать в CSV
+            </button>
+          </div>
+        </div>
         <div className="overflow-y-auto max-h-96 mt-4">
           <table className="min-w-full">
             <thead>

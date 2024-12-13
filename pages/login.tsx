@@ -27,10 +27,22 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8000/login', {
-        email,
-        password,
-      });
+      console.log("Отправляемые данные:", { email, password });
+
+      const response = await axios.post(
+        'http://localhost:8000/login',
+        {
+          email,
+          password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json', // Указываем формат JSON
+          },
+        }
+      );
+      console.log("Ответ после логина:", response.data);
+
 
       login(response.data.token);
       router.push('/');

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import Link from "next/link";
+import * as XLSX from "xlsx";
 
 interface Vehicle {
   id: number;
@@ -22,13 +23,13 @@ const UsersAdmin: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [file, setFile] = useState<File | null>(null); // Состояние для выбранного файла
 
   // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await axios.get("http://localhost:8000/getAllUsers");
-        console.log(response.data);
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (err) {
@@ -59,30 +60,74 @@ const UsersAdmin: React.FC = () => {
     }
   };
 
-  // Function to convert users data to CSV
-  const convertToCSV = (data: User[]) => {
-    const header = ["ID", "Username", "Email", "Vehicles"];
-    const rows = data.map((user) => {
-      const vehicles = user.vehicles
-        .map((vehicle) => `${vehicle.model} (${vehicle.license_plate})`)
-        .join(", ");
-      return [user.id, user.username, user.email, vehicles].join(",");
-    });
-
-    return [header.join(","), ...rows].join("\n");
+  // Function to convert data to Excel and download it
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      filteredUsers.map((user) => ({
+        ID: user.id,
+        Username: user.username,
+        Email: user.email,
+        Vehicles: user.vehicles
+          .map((vehicle) => `${vehicle.model} (${vehicle.license_plate})`)
+          .join(", "),
+      }))
+    );
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
+    XLSX.writeFile(workbook, "users.xlsx");
   };
 
-  // Function to trigger CSV download
+  // Function to convert data to CSV and download it
   const downloadCSV = () => {
-    const csvData = convertToCSV(filteredUsers);
-    const blob = new Blob([csvData], { type: "text/csv" });
+    const csvData = [
+      ["ID", "Username", "Email", "Vehicles"],
+      ...filteredUsers.map((user) => [
+        user.id,
+        user.username,
+        user.email,
+        user.vehicles.map((vehicle) => `${vehicle.model} (${vehicle.license_plate})`).join(", "),
+      ]),
+    ];
+
+    const csvContent = csvData
+      .map((row) => row.map((value) => `"${value}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "users.csv";
+    link.setAttribute("download", "users.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  // Функция отправки файла на сервер
+  const handleFileUpload = async () => {
+    if (file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        await axios.post("http://localhost:8000/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        alert("Файл успешно загружен!");
+      } catch (err) {
+        alert("Ошибка при загрузке файла");
+      }
+    } else {
+      alert("Пожалуйста, выберите файл для загрузки");
+    }
   };
 
   return (
@@ -147,12 +192,20 @@ const UsersAdmin: React.FC = () => {
             </table>
           </div>
         </div>
-        <button
-          onClick={downloadCSV}
-          className="bg-green-500 text-white px-4 py-2 rounded-md mt-4"
-        >
-          Скачать в CSV
-        </button>
+        <div className="flex space-x-4 mt-4">
+          <button
+            onClick={downloadExcel}
+            className="bg-green-500 text-white px-4 py-2 rounded-md"
+          >
+            Скачать в Excel
+          </button>
+          <button
+            onClick={downloadCSV}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+          >
+            Скачать в CSV
+          </button>
+        </div>
       </div>
     </AdminLayout>
   );

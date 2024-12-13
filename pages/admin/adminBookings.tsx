@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 interface Booking {
   id: number;
@@ -22,7 +23,7 @@ const AdminBookings: React.FC = () => {
       try {
         const response = await axios.get("http://localhost:8000/allBookings");
         const bookingsArray = Array.isArray(response.data.bookings) ? response.data.bookings : [];
-        
+
         const normalizedBookings: Booking[] = bookingsArray.map((booking: any) => ({
           id: booking.id,
           userId: booking.user_id,
@@ -71,19 +72,35 @@ const AdminBookings: React.FC = () => {
     link.click();
   };
 
+  // Download Excel
+  const downloadExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(bookings);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Bookings");
+    XLSX.writeFile(workbook, "bookings.xlsx");
+  };
+
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold text-center mb-6">Bookings Management</h1>
-      {loading && <p className="text-center">Loading bookings...</p>}
+      <h1 className="text-3xl font-bold text-center mb-6">Управление бронированиями</h1>
+      {loading && <p className="text-center">Загрузка бронирований...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
-        <h2 className="text-xl font-semibold">All Bookings</h2>
-        <button
-          onClick={downloadCSV}
-          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 mt-4 mb-4"
-        >
-          Скачать в CSV
-        </button>
+        <h2 className="text-xl font-semibold">Все бронирования</h2>
+        <div className="flex space-x-4 mt-4 mb-4">
+          <button
+            onClick={downloadCSV}
+            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+          >
+            Скачать в CSV
+          </button>
+          <button
+            onClick={downloadExcel}
+            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          >
+            Скачать в Excel
+          </button>
+        </div>
         <div className="overflow-y-auto max-h-96 mt-4">
           <table className="min-w-full">
             <thead>
@@ -105,7 +122,7 @@ const AdminBookings: React.FC = () => {
                       onClick={() => handleDelete(booking.id)}
                       className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     >
-                      Delete
+                      Удалить
                     </button>
                   </td>
                 </tr>

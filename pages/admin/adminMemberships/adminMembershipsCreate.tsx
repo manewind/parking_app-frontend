@@ -18,10 +18,10 @@ const AdminAddMembership = () => {
   const [price, setPrice] = useState('');
   const [bookingHours, setBookingHours] = useState('');
   const [privileges, setPrivileges] = useState<Privilege[]>([
-    { name: 'Access to standard parking spots', allowed: false },
-    { name: 'Priority support', allowed: false },
-    { name: 'Access to VIP zone', allowed: false },
-    { name: 'Electrical charging', allowed: false },
+    { name: 'Доступ к обычным парковочным местам', allowed: false },
+    { name: 'Приоритетная служба поддержки', allowed: false },
+    { name: 'Доступ к VIP местам', allowed: false },
+    { name: 'Зарядка', allowed: false },
   ]);
   const [bgColor, setBgColor] = useState('bg-gray-200');
   const [textColor, setTextColor] = useState('text-gray-800');
