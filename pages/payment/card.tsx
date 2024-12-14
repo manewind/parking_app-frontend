@@ -68,6 +68,11 @@ const PaymentPage: React.FC = () => {
           amount: numericAmount,
         });
 
+        const paymnetResponse = await axios.post('http://localhost:8000/newPayment', {
+          user_id: userId,
+          amount: numericAmount
+        })
+
         setShowModal(true);
 
         setCardNumber('');

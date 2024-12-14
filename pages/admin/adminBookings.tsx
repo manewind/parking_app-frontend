@@ -3,6 +3,7 @@ import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import * as XLSX from "xlsx";
 
+
 interface Booking {
   id: number;
   userId: number;
@@ -46,7 +47,7 @@ const AdminBookings: React.FC = () => {
 
   const handleDelete = async (bookingId: number) => {
     try {
-      await axios.delete(`http://localhost:8000/user/${bookingId}`);
+      await axios.delete(`http://localhost:8000/@{}/${bookingId}`);
       setBookings(bookings.filter((booking) => booking.id !== bookingId));
     } catch (err) {
       setError("Failed to delete booking");
