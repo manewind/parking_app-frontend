@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import * as XLSX from "xlsx"; // Импорт библиотеки для работы с Excel
+import FileUploader from "../../components/uploadFile";
 
 interface Review {
   id: number;
-  userId: number;
+  user_id: number;
   username: string;
   comment: string;
   rating: number;
@@ -15,12 +16,13 @@ const ReviewsAdmin: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const fetchReviews = async () => {
       try {
         const response = await axios.get("http://localhost:8000/usersReviews");
+        console.log(response.data)
         setReviews(response.data);
       } catch (err) {
         setError("Failed to load reviews");
@@ -32,19 +34,23 @@ const ReviewsAdmin: React.FC = () => {
     fetchReviews();
   }, []);
 
-  const sortReviews = (order: 'asc' | 'desc') => {
-    const sortedReviews = [...reviews].sort((a, b) => (order === 'asc' ? a.rating - b.rating : b.rating - a.rating));
+  const sortReviews = (order: "asc" | "desc") => {
+    const sortedReviews = [...reviews].sort((a, b) =>
+      order === "asc" ? a.rating - b.rating : b.rating - a.rating
+    );
     setReviews(sortedReviews);
   };
 
-  const handleSortChange = (order: 'asc' | 'desc') => {
+  const handleSortChange = (order: "asc" | "desc") => {
     setSortOrder(order);
     sortReviews(order);
   };
 
-  const handleDelete = async (reviewId: number) => {
+  const handleDelete = async (userId: number, reviewId: number) => {
     try {
-      await axios.delete(`/api/admin/reviews/${reviewId}`);
+      await axios.delete(
+        `http://localhost:8000/delete/${userId}/review/${reviewId}`
+      );
       setReviews(reviews.filter((review) => review.id !== reviewId));
     } catch (err) {
       setError("Failed to delete review");
@@ -60,7 +66,10 @@ const ReviewsAdmin: React.FC = () => {
 
   const convertToCSV = (data: Review[]): string => {
     const header = "id,username,comment,rating";
-    const rows = data.map((review) => `${review.id},${review.username},${review.comment},${review.rating}`);
+    const rows = data.map(
+      (review) =>
+        `${review.id},${review.username},${review.comment},${review.rating}`
+    );
     return [header, ...rows].join("\n");
   };
 
@@ -75,20 +84,22 @@ const ReviewsAdmin: React.FC = () => {
 
   return (
     <AdminLayout>
-      <h1 className="text-3xl font-bold text-center mb-6">Управление отзывами</h1>
+      <h1 className="text-3xl font-bold text-center mb-6">
+        Управление отзывами
+      </h1>
       {loading && <p className="text-center">Загрузка отзывов...</p>}
       {error && <p className="text-center text-red-500">{error}</p>}
       <div className="bg-gray-800 p-6 rounded-lg shadow-md">
         <h2 className="text-xl font-semibold">Все отзывы</h2>
         <div className="flex justify-between items-center">
           <button
-            onClick={() => handleSortChange('asc')}
+            onClick={() => handleSortChange("asc")}
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mt-4"
           >
             Сортировать по возрастанию
           </button>
           <button
-            onClick={() => handleSortChange('desc')}
+            onClick={() => handleSortChange("desc")}
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 mt-4"
           >
             Сортировать по убыванию
@@ -112,10 +123,18 @@ const ReviewsAdmin: React.FC = () => {
           <table className="min-w-full">
             <thead>
               <tr>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Пользователь</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Комментарий</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Рейтинг</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">Действия</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">
+                  Пользователь
+                </th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">
+                  Комментарий
+                </th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">
+                  Рейтинг
+                </th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-400">
+                  Действия
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -126,7 +145,7 @@ const ReviewsAdmin: React.FC = () => {
                   <td className="px-4 py-2">{review.rating}</td>
                   <td className="px-4 py-2 space-x-2">
                     <button
-                      onClick={() => handleDelete(review.id)}
+                      onClick={() => handleDelete(review.user_id, review.id)}
                       className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     >
                       Удалить
@@ -137,6 +156,7 @@ const ReviewsAdmin: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <FileUploader></FileUploader>
       </div>
     </AdminLayout>
   );

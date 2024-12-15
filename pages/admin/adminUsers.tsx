@@ -3,6 +3,7 @@ import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import Link from "next/link";
 import * as XLSX from "xlsx";
+import FileUploader from "../../components/uploadFile";
 
 interface Vehicle {
   id: number;
@@ -205,6 +206,7 @@ const UsersAdmin: React.FC = () => {
           >
             Скачать в CSV
           </button>
+          <FileUploader></FileUploader>
         </div>
       </div>
     </AdminLayout>
