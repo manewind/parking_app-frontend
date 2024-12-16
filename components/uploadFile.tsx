@@ -28,7 +28,7 @@ const FileUploader: React.FC = () => {
     formData.append("type", fileType);
 
     try {
-      const response = await axios.post("/uploadExcel", formData, {
+      const response = await axios.post("http://localhost:8000/uploadExcel", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       console.log(response.data);

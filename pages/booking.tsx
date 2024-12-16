@@ -144,14 +144,19 @@ const Bookings: React.FC = () => {
   };
 
   const handleBooking = () => {
+    if (!userMembership) {
+      alert("У вас нет абонемента. Пожалуйста, приобретите абонемент для бронирования места.");
+      return;
+    }
+  
     if (userId && selectedSpot) {
       setLoading(true);
-
+  
       const startTime = moment().toISOString();
-      const endTime = moment().add(5, 'hours').toISOString();
-
+      const endTime = moment().add(5, "hours").toISOString();
+  
       setBookedSpots((prev) => [...prev, selectedSpot]);
-
+  
       axios
         .post("http://localhost:8000/booking", {
           user_id: userId,
@@ -173,7 +178,7 @@ const Bookings: React.FC = () => {
               startTime: response.data.start_time,
             },
           ]);
-
+  
           console.log("Бронирование успешно:", response.data);
           alert("Бронирование успешно!");
         })
@@ -190,6 +195,7 @@ const Bookings: React.FC = () => {
       alert("Выберите место для бронирования.");
     }
   };
+  
 
   const floorSpots = parkingSpots.filter(spot => spot.floor === floor);
 
@@ -232,6 +238,14 @@ const Bookings: React.FC = () => {
     </button>
   </div>
 )}
+        <div className="text-center my-4">
+          {userMembership ? (
+            <p className="text-green-600">Ваш абонемент: {userMembership}</p>
+          ) : (
+            <p className="text-red-600">У вас нет активного абонемента.</p>
+          )}
+        </div>
+
       <div className="flex flex-col mt-8">
         <div className="flex justify-center gap-4 mb-3">
           <button onClick={() => setFloor(1)} className="bg-gray-500 text-white px-6 py-2 rounded-md hover:bg-gray-600 transition">Первый этаж</button>
