@@ -50,7 +50,7 @@ const ResetPassword = () => {
       <form onSubmit={handleResetPassword} className="space-y-4">
         <div>
           <label htmlFor="newPassword" className="block text-sm font-semibold">
-            New Password
+            Введите новый пароль
           </label>
           <input
             id="newPassword"

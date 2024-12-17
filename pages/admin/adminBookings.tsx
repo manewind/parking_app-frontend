@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/adminLayout";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import FileUploader from "../../components/uploadFile";
 
 interface Booking {
   id: number;
@@ -74,7 +73,6 @@ const AdminBookings: React.FC = () => {
     return [header, ...rows].join("\n");
   };
 
-  // Download CSV
   const downloadCSV = () => {
     const csvData = convertToCSV(bookings);
     const blob = new Blob([csvData], { type: "text/csv" });
@@ -84,7 +82,6 @@ const AdminBookings: React.FC = () => {
     link.click();
   };
 
-  // Download Excel
   const downloadExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(bookings);
     const workbook = XLSX.utils.book_new();
@@ -151,7 +148,6 @@ const AdminBookings: React.FC = () => {
               ))}
             </tbody>
           </table>
-          <FileUploader></FileUploader>
         </div>
       </div>
     </AdminLayout>

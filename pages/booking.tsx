@@ -3,6 +3,7 @@ import { FaStar } from "react-icons/fa";
 import axios from "axios";
 import { useAuth } from "../contexts/authContext";
 import moment from 'moment';
+import { AxiosError } from 'axios';
 
 interface ISpot {
   id: number;
@@ -84,48 +85,61 @@ const Bookings: React.FC = () => {
   useEffect(() => {
     if (userId) {
       axios
-        .get(`http://localhost:8000/user/${userId}`)
+        .get(`http://localhost:8000/memberships/${userId}`)
         .then((response) => {
-          const membershipName = response.data.membership?.membership_name;
-          console.log("User data from backend:", response.data); // Логируем данные пользователя
+          const membership = response.data; // Получаем весь объект абонемента
+          const membershipName = membership.membership_name || "Неизвестный";
+          console.log("Полученные данные о членстве пользователя:", membership);
           setUserMembership(membershipName);
         })
-        .catch((error) => {
-          console.error("Ошибка при получении данных пользователя:", error);
+        .catch((error: AxiosError) => {
+          if (error.response) {
+            console.error("Ошибка при получении данных о членстве пользователя:", error.response.data);
+          } else if (error.request) {
+            console.error("Ошибка при получении данных: нет ответа от сервера", error.request);
+          } else {
+            console.error("Ошибка при настройке запроса:", error.message);
+          }
           setUserMembership(null);
         });
     }
-
+  
     const fetchBookings = async () => {
       try {
         const response = await axios.get("http://localhost:8000/allBookings");
-        console.log("Bookings data from backend:", response.data); // Логируем данные о бронированиях
-
+        console.log("Полученные данные о бронированиях:", response.data);
+  
         const bookingsArray = Array.isArray(response.data.bookings) ? response.data.bookings : [];
-
+  
         const normalizedBookings: Booking[] = bookingsArray
-          .filter((booking: any) => moment(booking.start_time).isAfter(moment())) // Фильтруем прошедшие бронирования
+          .filter((booking: any) => moment(booking.start_time).isAfter(moment())) // Фильтрация по дате
           .map((booking: any) => ({
             id: booking.id,
             userId: booking.user_id,
-            username: booking.username || "Unknown User",
-            parkingSlot: `Slot ${booking.parking_slot_id}`,
+            username: booking.username || "Неизвестный пользователь",
+            parkingSlot: `Место ${booking.parking_slot_id || "N/A"}`,
             bookingTime: `${moment(booking.start_time).format("MMMM Do YYYY, h:mm:ss a")} - ${moment(booking.end_time).format("MMMM Do YYYY, h:mm:ss a")}`,
-            status: booking.status,
+            status: booking.status || "неизвестен",
             startTime: booking.start_time,
           }));
-
+  
         setBookings(normalizedBookings);
-
-        const bookedSlots = bookingsArray.map((booking: any) => booking.parking_slot_id);
+  
+        const bookedSlots = bookingsArray.map((booking: any) => booking.parking_slot_id).filter(Boolean);
         setBookedSpots(bookedSlots);
       } catch (err) {
-        console.error("Ошибка при получении данных о бронированиях:", err);
+        if (err instanceof AxiosError) {
+          console.error("Ошибка при получении данных о бронированиях:", err.response?.data);
+        } else {
+          console.error("Ошибка при настройке запроса:", err instanceof Error ? err.message : err);
+        }
       }
     };
-
+  
     fetchBookings();
   }, [userId]);
+  
+  
 
   const handleSpotClick = (spotId: number, isVIP: boolean) => {
     console.log(`Clicked spot ID: ${spotId}, isVIP: ${isVIP}, User Membership: ${userMembership}`);
@@ -144,57 +158,64 @@ const Bookings: React.FC = () => {
   };
 
   const handleBooking = () => {
-    if (!userMembership) {
-      alert("У вас нет абонемента. Пожалуйста, приобретите абонемент для бронирования места.");
-      return;
-    }
-  
-    if (userId && selectedSpot) {
-      setLoading(true);
-  
-      const startTime = moment().toISOString();
-      const endTime = moment().add(5, "hours").toISOString();
-  
-      setBookedSpots((prev) => [...prev, selectedSpot]);
-  
-      axios
-        .post("http://localhost:8000/booking", {
-          user_id: userId,
-          parking_slot_id: selectedSpot,
-          start_time: startTime,
-          end_time: endTime,
-          status: "pending",
-        })
-        .then((response) => {
-          setBookings((prevBookings) => [
-            ...prevBookings,
-            {
-              id: response.data.id,
-              userId: response.data.user_id,
-              username: response.data.username || "Unknown User",
-              parkingSlot: `Slot ${response.data.parking_slot_id}`,
-              bookingTime: `${moment(response.data.start_time).format("MMMM Do YYYY, h:mm:ss a")} - ${moment(response.data.end_time).format("MMMM Do YYYY, h:mm:ss a")}`,
-              status: response.data.status,
-              startTime: response.data.start_time,
-            },
-          ]);
-  
-          console.log("Бронирование успешно:", response.data);
-          alert("Бронирование успешно!");
-        })
-        .catch((error) => {
-          console.error("Ошибка при бронировании:", error.response?.data || error.message);
-          alert("Не удалось выполнить бронирование.");
-        })
-        .finally(() => {
-          setLoading(false);
-          setSelectedSpot(null);
-        });
-    } else {
-      console.error("Пользователь не залогинен или место не выбрано.");
-      alert("Выберите место для бронирования.");
-    }
-  };
+  if (!userMembership) {
+    alert("У вас нет абонемента. Пожалуйста, приобретите абонемент для бронирования места.");
+    return;
+  }
+
+  // Проверка, что пользователь не забронировал уже место
+  if (bookedSpots.length > 0) {
+    alert("Вы уже забронировали место. Только одно место можно забронировать.");
+    return;
+  }
+
+  if (userId && selectedSpot) {
+    setLoading(true);
+
+    const startTime = moment().toISOString();
+    const endTime = moment().add(5, "hours").toISOString();
+
+    setBookedSpots((prev) => [...prev, selectedSpot]);
+
+    axios
+      .post("http://localhost:8000/booking", {
+        user_id: userId,
+        parking_slot_id: selectedSpot,
+        start_time: startTime,
+        end_time: endTime,
+        status: "pending",
+      })
+      .then((response) => {
+        setBookings((prevBookings) => [
+          ...prevBookings,
+          {
+            id: response.data.id,
+            userId: response.data.user_id,
+            username: response.data.username || "Unknown User",
+            parkingSlot: `Slot ${response.data.parking_slot_id}`,
+            bookingTime: `${moment(response.data.start_time).format("MMMM Do YYYY, h:mm:ss a")} - ${moment(response.data.end_time).format("MMMM Do YYYY, h:mm:ss a")}`,
+            status: response.data.status,
+            startTime: response.data.start_time,
+          },
+        ]);
+
+        console.log("Бронирование успешно:", response.data);
+        alert("Бронирование успешно!");
+      })
+      .catch((error) => {
+        console.error("Ошибка при бронировании:", error.response?.data || error.message);
+        alert("Не удалось выполнить бронирование.");
+      })
+      .finally(() => {
+        setLoading(false);
+        setSelectedSpot(null);
+      });
+  } else {
+    console.error("Пользователь не залогинен или место не выбрано.");
+    alert("Выберите место для бронирования.");
+  }
+};
+
   
 
   const floorSpots = parkingSpots.filter(spot => spot.floor === floor);
@@ -204,26 +225,32 @@ const Bookings: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-6">Бронирование</h1>
       <p className="text-center text-xl mb-8">Пожалуйста, выберите место для парковки</p>
       <div className="grid grid-cols-5 gap-4">
-        {floorSpots.map((spot, index) => (
-          <div
-            key={spot.id}
-            className={`relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-500 transform ease-in-out
-              ${spot.isVIP ? "bg-yellow-300 border-4 border-yellow-500" : "bg-gray-200 border-gray-400"}
-              ${selectedSpot === spot.id ? "bg-blue-400 border-blue-600 scale-105" : "opacity-90"}
-              ${bookedSpots.includes(spot.id) ? "bg-red-600 border-red-800" : ""}`}
-            onClick={() => handleSpotClick(spot.id, spot.isVIP)}
-            style={{ animationDelay: `${index * 50}ms` }}
-          >
-            {spot.isVIP && (
-              <div className="absolute top-2 right-2 text-yellow-500">
-                <FaStar size={20} />
-              </div>
-            )}
-            <p className={`text-center font-semibold ${selectedSpot === spot.id ? "text-white" : "text-gray-800"}`}>
-              {`Место ${spot.id}`}
-            </p>
-          </div>
-        ))}
+      {floorSpots.map((spot, index) => (
+  <div
+    key={spot.id}
+    className={`relative flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition-all duration-500 transform ease-in-out
+      ${spot.isVIP ? "bg-yellow-300 border-4 border-yellow-500" : "bg-gray-200 border-gray-400"}
+      ${selectedSpot === spot.id ? "bg-blue-400 border-blue-600 scale-105" : "opacity-90"}
+      ${bookedSpots.includes(spot.id)
+        ? spot.isVIP
+          ? "bg-yellow-400 border-yellow-600 opacity-70" // Добавить измененный стиль для забронированных VIP-мест
+          : "bg-gray-400 border-gray-600 opacity-70"
+        : ""}`}
+    onClick={() => handleSpotClick(spot.id, spot.isVIP)}
+    style={{ animationDelay: `${index * 50}ms` }}
+  >
+    {spot.isVIP && (
+      <div className="absolute top-2 right-2 text-yellow-500">
+        <FaStar size={20} />
+      </div>
+    )}
+    <p className={`text-center font-semibold ${selectedSpot === spot.id ? "text-white" : "text-gray-800"}`}>
+      {`Место ${spot.id}`}
+    </p>
+  </div>
+))}
+
+
       </div>
       {selectedSpot && (
   <div className="text-center mt-4">

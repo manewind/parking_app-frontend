@@ -32,6 +32,20 @@ const AdminAddMembership = () => {
     setPrivileges(updatedPrivileges);
   };
 
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || /^[0-9\b]+$/.test(value)) {
+      setPrice(value);
+    }
+  };
+
+  const handleBookingHoursChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || /^[0-9\b]+$/.test(value)) {
+      setBookingHours(value);
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -93,7 +107,7 @@ const AdminAddMembership = () => {
             <input
               type="text"
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onChange={handlePriceChange}
               className="w-full p-3 border border-gray-300 rounded-md text-black"
               required
             />
@@ -103,7 +117,7 @@ const AdminAddMembership = () => {
             <input
               type="text"
               value={bookingHours}
-              onChange={(e) => setBookingHours(e.target.value)}
+              onChange={handleBookingHoursChange}
               className="w-full p-3 border border-gray-300 rounded-md text-black"
               required
             />

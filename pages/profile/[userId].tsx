@@ -59,6 +59,7 @@ const ProfilePage = () => {
         const membershipResponse = await fetch(
           `http://localhost:8000/memberships/${userId}`
         );
+        console.log(membershipResponse)
         if (!membershipResponse.ok) {
           throw new Error(
             `Ошибка при получении данных об абонементе: ${membershipResponse.status} ${membershipResponse.statusText}`
@@ -167,31 +168,34 @@ const ProfilePage = () => {
   </div>
 )}
 
-      {user?.vehicles && user.vehicles.length > 0 && (
-        <div className="my-6">
-          <h2 className="text-2xl font-semibold mb-4">
-            Информация о транспортных средствах
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {user.vehicles.map((vehicle) => (
-              <div
-                key={vehicle.id}
-                className="p-4 border rounded-lg bg-gray-100 text-black"
-              >
-                <p className="text-xl font-semibold text-black">
-                  Модель: {vehicle.model}
-                </p>
-                <p className="text-xl font-semibold text-black">
-                  Госномер: {vehicle.license_plate}
-                </p>
-                <p className="text-xl font-semibold text-black">
-                  Тип: {vehicle.vehicle_type}
-                </p>
-              </div>
-            ))}
-          </div>
+<div className="my-6">
+  <h2 className="text-2xl font-semibold mb-4">
+    Информация о транспортных средствах
+  </h2>
+  {user?.vehicles && user.vehicles.length > 0 ? (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {user.vehicles.map((vehicle) => (
+        <div
+          key={vehicle.id}
+          className="p-4 border rounded-lg bg-gray-100 text-black"
+        >
+          <p className="text-xl font-semibold text-black">
+            Модель: {vehicle.model}
+          </p>
+          <p className="text-xl font-semibold text-black">
+            Госномер: {vehicle.license_plate}
+          </p>
+          <p className="text-xl font-semibold text-black">
+            Тип: {vehicle.vehicle_type}
+          </p>
         </div>
-      )}
+      ))}
+    </div>
+  ) : (
+    <p className="text-gray-500">Информация о транспортных средствах отсутствует.</p>
+  )}
+</div>
+
 
 <div className="my-6">
   <h2 className="text-2xl font-semibold mb-4">Бронирования</h2>

@@ -47,6 +47,13 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           >
             Пользователи
           </button>
+
+          <button
+            onClick={() => handleNavigation("/")}
+            className="block w-full text-left px-4 py-2 rounded-md bg-blue-500 hover:bg-blue-600"
+          >
+            Вернуться на главную
+          </button>
         </nav>
       </div>
 

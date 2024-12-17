@@ -10,6 +10,7 @@ const Register = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPage, setShowPage] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   // Запускаем анимацию при загрузке компонента
   useEffect(() => {
@@ -19,6 +20,14 @@ const Register = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Проверка длины пароля
+    if (password.length < 5) {
+      setPasswordError('Пароль должен содержать минимум 5 символов');
+      return;
+    } else {
+      setPasswordError('');
+    }
 
     if (password !== confirmPassword) {
       alert('Пароли не совпадают');
@@ -87,6 +96,7 @@ const Register = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full p-2 border border-gray-300 rounded text-black"
           />
+          {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
         </div>
 
         <div>
